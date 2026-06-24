@@ -274,9 +274,12 @@
 
       /* align-items:center + overflow:auto clips the top of content — use flex-start so
          the full canvas is reachable by scrolling */
+      .form-panel { overflow-y: scroll; -webkit-overflow-scrolling: touch; }
       .preview-area {
         padding: 24px 16px;
         align-items: flex-start;
+        overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
       }
       .sig-canvas { margin: 0 auto; }
 
