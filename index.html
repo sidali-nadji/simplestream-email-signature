@@ -699,8 +699,10 @@ createApp({
       if (sig.showEmail && sig.email)
         lines.push('<a href="mailto:' + sig.email + '" style="color:' + tc + ';text-decoration:none;">' + sig.email + '</a>');
 
+      // Nested 1-row table spacer: more reliable than <div> in Outlook 2007-2013 Word engine
+      const spacerTable = '<table width="1" cellpadding="0" cellspacing="0" border="0" style="mso-table-lspace:0pt;mso-table-rspace:0pt;"><tr><td height="5" style="font-size:0;line-height:0;mso-line-height-rule:exactly;"> </td></tr></table>';
       const contactBlock = lines.length
-        ? '\n<div style="line-height:5px;font-size:5px;">&nbsp;</div>\n' + lines.join('<br>\n')
+        ? '\n' + spacerTable + '\n' + lines.join('<br>\n')
         : '';
       const roleBlock = sig.role ? '<br>\n' + sig.role : '';
 
@@ -711,7 +713,7 @@ createApp({
       const socialBlock = icons.join('&nbsp;&nbsp;&nbsp;');
 
       return (
-'<table width="615" cellspacing="0" cellpadding="0" border="0" style="' + f + 'color:' + tc + ';border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">\n'
+'<table width="615" align="left" cellspacing="0" cellpadding="0" border="0" style="' + f + 'color:' + tc + ';border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">\n'
 + '  <tr>\n'
 + '    <td width="190" rowspan="2" valign="middle" style="padding-right:15px;border-right:1px solid ' + sc + ';">\n'
 + '      <a href="' + sig.companyUrl + '" target="_blank" style="text-decoration:none;">\n'
@@ -720,7 +722,7 @@ createApp({
 + '    </td>\n'
 + '    <td width="15" rowspan="2"></td>\n'
 + '    <td width="260" valign="top" style="padding-top:2px;white-space:nowrap;line-height:20px;color:' + tc + ';font-size:13px;' + f + '">\n'
-+ '      <b style="font-size:14.5px;color:' + tc + ';">' + fullName.value + '</b>' + roleBlock + contactBlock + '\n'
++ '      <b style="font-size:14.5px;font-weight:bold;color:' + tc + ';' + f + '">' + fullName.value + '</b>' + roleBlock + contactBlock + '\n'
 + '    </td>\n'
 + '    <td width="120" align="right" valign="top" style="padding-top:6px;font-size:10px;">\n'
 + '      ' + socialBlock + '\n'
