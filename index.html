@@ -264,7 +264,13 @@
       /* hide desktop tab switcher on mobile — bottom nav handles it */
       .preview-toolbar .tabs { display: none; }
 
-      .preview-area { padding: 24px 16px; }
+      /* align-items:center + overflow:auto clips the top of content — use flex-start so
+         the full canvas is reachable by scrolling */
+      .preview-area {
+        padding: 24px 16px;
+        align-items: flex-start;
+      }
+      .sig-canvas { margin: 0 auto; }
 
       .mobile-nav { display: flex; }
     }
