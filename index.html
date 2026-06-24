@@ -250,7 +250,15 @@
         grid-template-rows: 1fr;
       }
 
-      /* panels fill the whole layout area; hidden ones are gone from flow */
+      /* Force both panels into the same grid cell (row 1 / col 1).
+         Without this, grid auto-placement puts preview-panel in row 2
+         which is auto-height — no constraint means overflow:auto never fires. */
+      .form-panel,
+      .preview-panel {
+        grid-row: 1;
+        grid-column: 1;
+      }
+
       .form-panel {
         border-right: none;
         border-bottom: none;
