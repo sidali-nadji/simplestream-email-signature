@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Signature Builder</title>
+  <script src="https://unpkg.com/vue@3.5.38/dist/vue.global.prod.js" integrity="sha384-KYk+4lWOhWTo/BrM+zKkwLtFsD6cs2ClFbaGiX5ozDVHPqF4nOqxVGiHvcyWsw8B" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d0d12;
+      color: #e2e2e8;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 12px 24px;
+      border-bottom: 1px solid #1a1a28;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    header h1 { font-size: 13px; font-weight: 600; color: #fff; letter-spacing: 0.03em; }
+    .badge {
+      font-size: 10px; color: #6060a0;
+      padding: 2px 8px; border-radius: 20px;
+      border: 1px solid #22223a; letter-spacing: 0.02em;
+    }
+
+    /* ── DESKTOP LAYOUT ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* ── FORM ── */
+    .form-panel {
+      border-right: 1px solid #1a1a28;
+      overflow-y: auto;
+      padding: 16px 14px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .form-panel::-webkit-scrollbar { width: 3px; }
+    .form-panel::-webkit-scrollbar-thumb { background: #252540; border-radius: 2px; }
+
+    .section-label {
+      font-size: 9.5px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: #44446a; margin-bottom: 7px;
+    }
+
+    .field-group { display: flex; flex-direction: column; gap: 7px; }
+    .field { display: flex; flex-direction: column; gap: 3px; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+
+    label { font-size: 10.5px; color: #7070a0; font-weight: 500; }
+
+    input[type="text"], input[type="email"],
+    input[type="url"], input[type="tel"], textarea {
+      background: #13131e; border: 1px solid #20202e; border-radius: 5px;
+      padding: 6px 9px; font-size: 12.5px; color: #d8d8e8;
+      outline: none; transition: border-color 0.12s;
+      width: 100%; font-family: inherit;
+    }
+    textarea { resize: vertical; min-height: 46px; line-height: 1.5; }
+    input:focus, textarea:focus { border-color: #3d3dcc; }
+    input::placeholder, textarea::placeholder { color: #30304a; }
+
+    .color-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .color-wrap {
+      display: flex; align-items: center; gap: 7px;
+      background: #13131e; border: 1px solid #20202e;
+      border-radius: 5px; padding: 5px 8px;
+    }
+    input[type="color"] {
+      width: 18px; height: 18px; border: none; border-radius: 3px;
+      cursor: pointer; background: none; padding: 0; flex-shrink: 0;
+    }
+    .hex-input {
+      font-size: 11px; color: #7070a0;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: none; border: none; outline: none; width: 60px;
+    }
+
+    .section-divider { height: 1px; background: #1a1a28; }
+
+    /* toggle */
+    .toggle-row {
+      display: flex; align-items: center;
+      justify-content: space-between; padding: 1px 0;
+    }
+    .toggle { position: relative; width: 28px; height: 16px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: #202030; border-radius: 16px;
+      cursor: pointer; transition: background 0.18s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute;
+      width: 10px; height: 10px; left: 3px; top: 3px;
+      background: #fff; border-radius: 50%; transition: transform 0.18s;
+    }
+    .toggle input:checked + .toggle-slider { background: #3d3dcc; }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(12px); }
+
+    /* ── PREVIEW PANEL ── */
+    .preview-panel { display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+
+    .preview-toolbar {
+      padding: 10px 20px; border-bottom: 1px solid #1a1a28;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .tabs {
+      display: flex; gap: 2px;
+      background: #13131e; border-radius: 6px; padding: 3px;
+      border: 1px solid #20202e;
+    }
+    .tab-btn {
+      padding: 4px 13px; border-radius: 4px; border: none;
+      background: none; color: #7070a0; font-size: 11.5px; font-weight: 500;
+      cursor: pointer; transition: all 0.12s;
+    }
+    .tab-btn.active { background: #1e1e32; color: #d8d8e8; }
+
+    .copy-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 6px;
+      border: 1px solid #30308844; background: #18182a;
+      color: #8888cc; font-size: 11.5px; font-weight: 600;
+      cursor: pointer; transition: all 0.12s; letter-spacing: 0.01em;
+    }
+    .copy-btn:hover { background: #1e1e36; color: #aaaae8; }
+    .copy-btn.copied { color: #44d4a4; border-color: #44d4a444; background: #1a2820; }
+    .copy-btn svg { width: 12px; height: 12px; }
+
+    /* ── SIGNATURE STAGE ── */
+    .preview-area {
+      flex: 1; overflow: auto; min-height: 0;
+      background: #0a0a0f;
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px 40px;
+    }
+
+    .sig-canvas {
+      background: #fff;
+      padding: 28px 32px 24px;
+      display: inline-block;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 8px 40px rgba(0,0,0,0.7);
+      /* zoom applied inline by Vue */
+    }
+
+    /* ── CODE VIEW ── */
+    .code-view { width: 100%; height: 100%; background: #0a0a0f; overflow: auto; }
+    .code-view pre {
+      padding: 28px 32px; font-size: 11px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: #8898b8; line-height: 1.7;
+      white-space: pre-wrap; word-break: break-all;
+    }
+
+    /* ── GUIDE VIEW ── */
+    .guide-view { width: 100%; height: 100%; background: #0a0a0f; overflow: auto; }
+    .guide-inner { max-width: 540px; margin: 0 auto; padding: 32px 28px 48px; }
+    .guide-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 28px;
+    }
+    .guide-title { font-size: 14px; font-weight: 600; color: #d8d8e8; }
+    .os-switcher {
+      display: flex; gap: 2px;
+      background: #13131e; border-radius: 6px; padding: 3px;
+      border: 1px solid #20202e;
+    }
+    .os-btn {
+      padding: 4px 13px; border-radius: 4px; border: none;
+      background: none; color: #7070a0; font-size: 11.5px; font-weight: 500;
+      cursor: pointer; transition: all 0.12s;
+    }
+    .os-btn.active { background: #1e1e32; color: #d8d8e8; }
+    .steps { display: flex; flex-direction: column; }
+    .step {
+      display: flex; gap: 14px;
+      padding: 16px 0; border-bottom: 1px solid #14141f;
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #16162a; border: 1px solid #3030aa44;
+      color: #7070cc; font-size: 10.5px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .step-title { font-size: 12.5px; font-weight: 600; color: #c8c8e8; margin-bottom: 5px; }
+    .step-desc { font-size: 12px; color: #5a5a88; line-height: 1.65; }
+    .step-desc strong { color: #a0a0cc; font-weight: 600; }
+    .step-desc code, .step-desc kbd {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 10.5px; background: #16162a;
+      color: #9898c8; padding: 1px 5px;
+      border-radius: 3px; border: 1px solid #25254a;
+      white-space: nowrap;
+    }
+    .guide-note {
+      margin-top: 22px; padding: 13px 15px;
+      background: #111120; border: 1px solid #22223a;
+      border-radius: 6px; font-size: 11.5px; color: #55557a; line-height: 1.6;
+    }
+    .guide-note strong { color: #7070a0; }
+
+    /* ── MOBILE NAV ── */
+    .mobile-nav {
+      display: none;
+      border-top: 1px solid #1a1a28;
+      background: #0d0d12;
+      flex-shrink: 0;
+    }
+    .mobile-nav-btn {
+      flex: 1; padding: 11px 8px;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      border: none; background: none;
+      color: #44446a; font-size: 10px; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      cursor: pointer; transition: color 0.12s;
+      border-top: 2px solid transparent;
+    }
+    .mobile-nav-btn.active { color: #a0a0e8; border-top-color: #3d3dcc; }
+    .mobile-nav-btn svg { width: 18px; height: 18px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 767px) {
+      header { padding: 10px 16px; }
+
+      .layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+      }
+
+      /* panels fill the whole layout area; hidden ones are gone from flow */
+      .form-panel {
+        border-right: none;
+        border-bottom: none;
+        padding: 14px 12px 20px;
+      }
+      .form-panel.panel-hidden,
+      .preview-panel.panel-hidden { display: none; }
+
+      .preview-toolbar { padding: 8px 14px; }
+
+      /* hide desktop tab switcher on mobile — bottom nav handles it */
+      .preview-toolbar .tabs { display: none; }
+
+      .preview-area { padding: 24px 16px; }
+
+      .mobile-nav { display: flex; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Email Signature Builder</h1>
+    <span class="badge">Outlook · Apple Mail · Gmail</span>
+  </header>
+
+  <div class="layout">
+
+    <!-- ── FORM ── -->
+    <div class="form-panel" :class="{ 'panel-hidden': isMobile && mobilePanel !== 'edit' }">
+
+      <div>
+        <div class="section-label">Company</div>
+        <div class="field-group">
+          <div class="field">
+            <label>Company name</label>
+            <input type="text" v-model="sig.company" placeholder="Simplestream" />
+          </div>
+          <div class="field">
+            <label>Website URL</label>
+            <input type="url" v-model="sig.companyUrl" placeholder="https://www.simplestream.com/" />
+          </div>
+          <div class="field">
+            <label>Logo URL</label>
+            <input type="url" v-model="sig.logoUrl" placeholder="https://…/logo.png" />
+          </div>
+          <div class="field">
+            <label>Office address</label>
+            <textarea v-model="sig.address" placeholder="Company Ltd, Floor, Street, City, Postcode"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div>
+        <div class="section-label">Identity</div>
+        <div class="field-group">
+          <div class="row-2">
+            <div class="field">
+              <label>First name</label>
+              <input type="text" v-model="sig.firstName" placeholder="Jane" />
+            </div>
+            <div class="field">
+              <label>Last name</label>
+              <input type="text" v-model="sig.lastName" placeholder="Smith" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Job title</label>
+            <input type="text" v-model="sig.role" placeholder="Senior Designer" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div>
+        <div class="section-label">Contact</div>
+        <div class="field-group">
+          <div class="field">
+            <label>Email address</label>
+            <input type="email" v-model="sig.email" placeholder="jane@simplestream.com" />
+          </div>
+          <div class="field">
+            <label>Mobile phone</label>
+            <input type="tel" v-model="sig.mobilePhone" placeholder="+44 7712 345678" />
+          </div>
+          <div class="field">
+            <label>Office / direct phone</label>
+            <input type="tel" v-model="sig.officePhone" placeholder="+44 20 7946 0321" />
+          </div>
+        </div>
+        <div class="field-group" style="margin-top:9px;">
+          <div class="toggle-row">
+            <label>Show email</label>
+            <label class="toggle"><input type="checkbox" v-model="sig.showEmail" /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <label>Show mobile</label>
+            <label class="toggle"><input type="checkbox" v-model="sig.showMobile" /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <label>Show office phone</label>
+            <label class="toggle"><input type="checkbox" v-model="sig.showOffice" /><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div>
+        <div class="section-label">Social</div>
+        <div class="field-group">
+          <div class="field">
+            <label>LinkedIn URL</label>
+            <input type="url" v-model="sig.linkedin" placeholder="https://linkedin.com/company/…" />
+          </div>
+          <div class="field">
+            <label>Twitter / X URL</label>
+            <input type="url" v-model="sig.twitter" placeholder="https://twitter.com/…" />
+          </div>
+        </div>
+        <div class="field-group" style="margin-top:9px;">
+          <div class="toggle-row">
+            <label>Website icon</label>
+            <label class="toggle"><input type="checkbox" v-model="sig.showWebIcon" /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <label>LinkedIn icon</label>
+            <label class="toggle"><input type="checkbox" v-model="sig.showLinkedin" /><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <label>Twitter / X icon</label>
+            <label class="toggle"><input type="checkbox" v-model="sig.showTwitter" /><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div>
+        <div class="section-label">Style</div>
+        <div class="color-row">
+          <div class="field">
+            <label>Text &amp; icon color</label>
+            <div class="color-wrap">
+              <input type="color" v-model="sig.textColor" />
+              <input class="hex-input" type="text" v-model="sig.textColor" maxlength="7" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Divider color</label>
+            <div class="color-wrap">
+              <input type="color" v-model="sig.sepColor" />
+              <input class="hex-input" type="text" v-model="sig.sepColor" maxlength="7" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /form-panel -->
+
+    <!-- ── PREVIEW PANEL ── -->
+    <div class="preview-panel" :class="{ 'panel-hidden': isMobile && mobilePanel === 'edit' }">
+
+      <div class="preview-toolbar">
+        <!-- desktop only: Preview / HTML tab switcher -->
+        <div class="tabs">
+          <button class="tab-btn" :class="{ active: activeTab === 'preview' }" @click="desktopTab = 'preview'">Preview</button>
+          <button class="tab-btn" :class="{ active: activeTab === 'html' }" @click="desktopTab = 'html'">HTML</button>
+          <button class="tab-btn" :class="{ active: activeTab === 'guide' }" @click="desktopTab = 'guide'">Outlook guide</button>
+        </div>
+        <button class="copy-btn" :class="{ copied }" @click="copyHtml">
+          <svg v-if="!copied" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+          </svg>
+          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ copied ? 'Copied!' : 'Copy HTML' }}
+        </button>
+      </div>
+
+      <div class="preview-area" ref="previewAreaEl">
+        <!-- SIGNATURE PREVIEW -->
+        <div v-show="activeTab === 'preview'" class="sig-canvas" :style="canvasStyle">
+          <div v-html="sigHtml"></div>
+        </div>
+        <!-- HTML SOURCE -->
+        <div v-show="activeTab === 'html'" class="code-view">
+          <pre>{{ sigHtml }}</pre>
+        </div>
+        <!-- OUTLOOK GUIDE -->
+        <div v-show="activeTab === 'guide'" class="guide-view">
+          <div class="guide-inner">
+            <div class="guide-header">
+              <span class="guide-title">Adding your signature to Outlook</span>
+              <div class="os-switcher">
+                <button class="os-btn" :class="{ active: guideOs === 'windows' }" @click="guideOs = 'windows'">Windows</button>
+                <button class="os-btn" :class="{ active: guideOs === 'mac' }" @click="guideOs = 'mac'">macOS</button>
+              </div>
+            </div>
+
+            <!-- WINDOWS -->
+            <div v-show="guideOs === 'windows'" class="steps">
+              <div class="step">
+                <div class="step-num">1</div>
+                <div>
+                  <div class="step-title">Copy the signature HTML</div>
+                  <div class="step-desc">Click <strong>Copy HTML</strong> at the top right of this page.</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">2</div>
+                <div>
+                  <div class="step-title">Open the Signatures folder</div>
+                  <div class="step-desc">Press <kbd>Win + R</kbd>, type <code>%APPDATA%\Microsoft\Signatures</code> and press <kbd>Enter</kbd>.</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">3</div>
+                <div>
+                  <div class="step-title">Save as an HTM file</div>
+                  <div class="step-desc">Open <strong>Notepad</strong>, paste with <kbd>Ctrl + V</kbd>, then <strong>File → Save As</strong>. Set <em>Save as type</em> to <strong>All Files</strong>, <em>Encoding</em> to <strong>UTF-8</strong>, and save the file as <code>YourName.htm</code> inside that Signatures folder.</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">4</div>
+                <div>
+                  <div class="step-title">Open Outlook Signatures</div>
+                  <div class="step-desc">In Outlook: <strong>File → Options → Mail → Signatures…</strong></div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">5</div>
+                <div>
+                  <div class="step-title">Create and set as default</div>
+                  <div class="step-desc">Click <strong>New</strong> and type the same name you used for the file (without <code>.htm</code>). Under <em>Choose default signature</em>, pick it for <strong>New messages</strong> and <strong>Replies/forwards</strong>, then click <strong>OK</strong>.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MACOS -->
+            <div v-show="guideOs === 'mac'" class="steps">
+              <div class="step">
+                <div class="step-num">1</div>
+                <div>
+                  <div class="step-title">Copy the signature HTML</div>
+                  <div class="step-desc">Click <strong>Copy HTML</strong> at the top right of this page.</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">2</div>
+                <div>
+                  <div class="step-title">Save as a plain HTML file</div>
+                  <div class="step-desc">Open <strong>TextEdit</strong>, go to <strong>Format → Make Plain Text</strong>, paste with <kbd>Cmd + V</kbd>, then save as <code>signature.htm</code>.</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">3</div>
+                <div>
+                  <div class="step-title">Render it in Safari</div>
+                  <div class="step-desc">Double-click <code>signature.htm</code> to open it in Safari. Press <kbd>Cmd + A</kbd> to select all, then <kbd>Cmd + C</kbd> to copy the rendered signature.</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">4</div>
+                <div>
+                  <div class="step-title">Open Outlook Preferences</div>
+                  <div class="step-desc">In Outlook for Mac: <strong>Outlook menu → Preferences → Signatures</strong>. Click <strong>+</strong> to add a new signature and give it a name.</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">5</div>
+                <div>
+                  <div class="step-title">Paste and assign</div>
+                  <div class="step-desc">Click inside the signature edit area and press <kbd>Cmd + V</kbd>. Under <em>Default signatures</em>, select it for <strong>New messages</strong> and <strong>Replies &amp; Forwards</strong>, then close Preferences.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="guide-note">
+              <strong>Note:</strong> The social icons in this signature are embedded as inline data URIs — they display without any external image hosting and will not be blocked by Outlook's image settings.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /preview-panel -->
+
+  </div><!-- /layout -->
+
+  <!-- ── MOBILE BOTTOM NAV ── -->
+  <nav class="mobile-nav">
+    <button class="mobile-nav-btn" :class="{ active: mobilePanel === 'edit' }" @click="mobilePanel = 'edit'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Edit
+    </button>
+    <button class="mobile-nav-btn" :class="{ active: mobilePanel === 'preview' }" @click="mobilePanel = 'preview'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      Preview
+    </button>
+    <button class="mobile-nav-btn" :class="{ active: mobilePanel === 'html' }" @click="mobilePanel = 'html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="16 18 22 12 16 6"/>
+        <polyline points="8 6 2 12 8 18"/>
+      </svg>
+      HTML
+    </button>
+    <button class="mobile-nav-btn" :class="{ active: mobilePanel === 'guide' }" @click="mobilePanel = 'guide'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      Guide
+    </button>
+  </nav>
+
+</div><!-- /#app -->
+
+<script>
+const { createApp, reactive, computed, ref, onMounted, onUnmounted } = Vue;
+
+/* ── SVG icon helpers (data URIs — no external image requests) ── */
+function makeSvgUri(inner, bg) {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">'
+    + '<circle cx="12" cy="12" r="12" fill="' + bg + '"/>'
+    + inner + '</svg>';
+  try { return 'data:image/svg+xml;base64,' + btoa(svg); }
+  catch  { return 'data:image/svg+xml,' + encodeURIComponent(svg); }
+}
+function iconGlobe(c) {
+  return makeSvgUri(
+    '<g fill="none" stroke="white" stroke-width="1.25" stroke-linecap="round">'
+    + '<circle cx="12" cy="12" r="6.5"/>'
+    + '<ellipse cx="12" cy="12" rx="2.9" ry="6.5"/>'
+    + '<line x1="5.5" y1="12" x2="18.5" y2="12"/>'
+    + '<path d="M6.5 9q5.5 1.6 11 0"/>'
+    + '<path d="M6.5 15q5.5-1.6 11 0"/>'
+    + '</g>', c);
+}
+function iconLinkedIn(c) {
+  return makeSvgUri(
+    '<rect x="7" y="11" width="2.1" height="6" rx=".3" fill="white"/>'
+    + '<circle cx="8.05" cy="8.5" r="1.15" fill="white"/>'
+    + '<path d="M11.5 11h2.1v.95c.5-.75 1.35-1.15 2.2-1.15 1.75 0 2.7 1.1 2.7 3.15V17h-2.1v-2.85c0-1.1-.4-1.65-1.25-1.65-.9 0-1.45.6-1.45 1.8V17h-2.2V11z" fill="white"/>', c);
+}
+function iconTwitter(c) {
+  return makeSvgUri(
+    '<path fill="white" d="M18.5 8.2c-.6.25-1.25.42-1.92.5.7-.41 1.22-1.07 1.47-1.85-.65.38-1.38.66-2.14.81-.62-.66-1.5-1.06-2.47-1.06-1.87 0-3.38 1.52-3.38 3.39 0 .27.03.52.08.77C7.47 10.63 5.14 9.27 3.56 7.22c-.28.49-.44 1.05-.44 1.66 0 1.15.58 2.16 1.47 2.75-.54-.02-1.05-.17-1.5-.41v.04c0 1.64 1.17 3 2.72 3.31-.28.08-.58.12-.89.12-.22 0-.43-.02-.63-.06.43 1.34 1.67 2.31 3.14 2.34-1.15.9-2.6 1.44-4.17 1.44-.27 0-.54-.02-.8-.05 1.48.95 3.24 1.5 5.14 1.5 6.16 0 9.53-5.1 9.53-9.53 0-.14 0-.29-.01-.43.65-.47 1.22-1.06 1.67-1.73l-.24.09z"/>', c);
+}
+
+createApp({
+  setup() {
+    /* ── Responsive state ── */
+    const isMobile     = ref(false);
+    const mobilePanel  = ref('edit');    // 'edit' | 'preview' | 'html' | 'guide'
+    const desktopTab   = ref('preview'); // 'preview' | 'html' | 'guide'
+    const guideOs      = ref('windows'); // 'windows' | 'mac'
+
+    /* activeTab: on mobile, derived from mobilePanel; on desktop, from desktopTab */
+    const activeTab = computed(() => {
+      if (isMobile.value) {
+        if (mobilePanel.value === 'html')  return 'html';
+        if (mobilePanel.value === 'guide') return 'guide';
+        return 'preview';
+      }
+      return desktopTab.value;
+    });
+
+    /* ── Signature canvas zoom ── */
+    const previewAreaEl = ref(null);
+    const sigZoom = ref(1);
+
+    function recalcZoom() {
+      isMobile.value = window.innerWidth < 768;
+      if (!previewAreaEl.value) return;
+      // Available width inside the preview-area (subtract its padding)
+      const padH = isMobile.value ? 32 : 80; // 16px×2 mobile, 40px×2 desktop
+      const canvasPad = 64;                    // 32px left + 32px right on .sig-canvas
+      const available = previewAreaEl.value.clientWidth - padH - canvasPad;
+      sigZoom.value = Math.min(1, available / 615);
+    }
+
+    onMounted(() => {
+      recalcZoom();
+      window.addEventListener('resize', recalcZoom);
+    });
+    onUnmounted(() => {
+      window.removeEventListener('resize', recalcZoom);
+    });
+
+    const canvasStyle = computed(() =>
+      sigZoom.value < 1 ? { zoom: sigZoom.value } : {}
+    );
+
+    /* ── Form data ── */
+    const copied = ref(false);
+    const sig = reactive({
+      company:      'Simplestream',
+      companyUrl:   'https://www.simplestream.com/',
+      logoUrl:      'https://assets.simplestreamcdn.com/simplestream/signature/simplestream-logo.png',
+      address:      'Simplestream Ltd, 40 Long Acre, London, WC2E 9JT',
+      firstName:    'John',
+      lastName:     'Doe',
+      role:         'Senior Marketing Analyst',
+      email:        'john.doe@simplestream.com',
+      mobilePhone:  '+44 7712 345678',
+      officePhone:  '+44 20 7946 0321',
+      showEmail:    false,
+      showMobile:   false,
+      showOffice:   false,
+      linkedin:     'https://www.linkedin.com/company/simplestream-ltd',
+      twitter:      'https://twitter.com/simplestreamuk',
+      showWebIcon:  true,
+      showLinkedin: true,
+      showTwitter:  true,
+      textColor:    '#091D41',
+      sepColor:     '#bbbbbb',
+    });
+
+    const fullName = computed(() =>
+      [sig.firstName, sig.lastName].filter(Boolean).join(' ').toUpperCase() || 'YOUR NAME'
+    );
+
+    /* ── Signature HTML (email-client safe: inline styles, tables, no external images) ── */
+    const sigHtml = computed(() => {
+      const tc = sig.textColor;
+      const sc = sig.sepColor;
+      const f  = "font-family:'Trebuchet MS',Arial,sans-serif;";
+
+      const lines = [];
+      if (sig.showMobile && sig.mobilePhone)
+        lines.push('M:&nbsp;<a href="tel:' + sig.mobilePhone.replace(/\s/g,'') + '" style="color:' + tc + ';text-decoration:none;">' + sig.mobilePhone + '</a>');
+      if (sig.showOffice && sig.officePhone)
+        lines.push('T:&nbsp;<a href="tel:' + sig.officePhone.replace(/\s/g,'') + '" style="color:' + tc + ';text-decoration:none;">' + sig.officePhone + '</a>');
+      if (sig.showEmail && sig.email)
+        lines.push('<a href="mailto:' + sig.email + '" style="color:' + tc + ';text-decoration:none;">' + sig.email + '</a>');
+
+      const contactBlock = lines.length
+        ? '\n<div style="line-height:5px;font-size:5px;">&nbsp;</div>\n' + lines.join('<br>\n')
+        : '';
+      const roleBlock = sig.role ? '<br>\n' + sig.role : '';
+
+      const icons = [];
+      if (sig.showWebIcon  && sig.companyUrl) icons.push('<a href="' + sig.companyUrl + '" target="_blank" style="text-decoration:none;"><img src="' + iconGlobe(tc)    + '" width="24" height="24" border="0" alt="' + sig.company + '" style="display:inline-block;vertical-align:middle;"></a>');
+      if (sig.showLinkedin && sig.linkedin)   icons.push('<a href="' + sig.linkedin   + '" target="_blank" style="text-decoration:none;"><img src="' + iconLinkedIn(tc) + '" width="24" height="24" border="0" alt="LinkedIn" style="display:inline-block;vertical-align:middle;"></a>');
+      if (sig.showTwitter  && sig.twitter)    icons.push('<a href="' + sig.twitter    + '" target="_blank" style="text-decoration:none;"><img src="' + iconTwitter(tc)  + '" width="24" height="24" border="0" alt="Twitter"  style="display:inline-block;vertical-align:middle;"></a>');
+      const socialBlock = icons.join('&nbsp;&nbsp;&nbsp;');
+
+      return (
+'<table width="615" cellspacing="0" cellpadding="0" border="0" style="' + f + 'color:' + tc + ';border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">\n'
++ '  <tr>\n'
++ '    <td width="190" rowspan="2" valign="middle" style="padding-right:15px;border-right:1px solid ' + sc + ';">\n'
++ '      <a href="' + sig.companyUrl + '" target="_blank" style="text-decoration:none;">\n'
++ '        <img src="' + sig.logoUrl + '" width="175" border="0" alt="' + sig.company + '" style="display:block;outline:none;text-decoration:none;">\n'
++ '      </a>\n'
++ '    </td>\n'
++ '    <td width="15" rowspan="2"></td>\n'
++ '    <td width="260" valign="top" style="padding-top:2px;white-space:nowrap;line-height:20px;color:' + tc + ';font-size:13px;' + f + '">\n'
++ '      <b style="font-size:14.5px;color:' + tc + ';">' + fullName.value + '</b>' + roleBlock + contactBlock + '\n'
++ '    </td>\n'
++ '    <td width="120" align="right" valign="top" style="padding-top:6px;font-size:10px;">\n'
++ '      ' + socialBlock + '\n'
++ '    </td>\n'
++ '    <td width="30"></td>\n'
++ '  </tr>\n'
++ '  <tr>\n'
++ '    <td width="410" colspan="3" height="28" valign="middle" style="white-space:nowrap;mso-line-height-rule:exactly;line-height:17px;color:' + tc + ';font-size:11.5px;' + f + '">\n'
++ '      ' + sig.address + '\n'
++ '    </td>\n'
++ '  </tr>\n'
++ '</table>'
+      );
+    });
+
+    async function copyHtml() {
+      try { await navigator.clipboard.writeText(sigHtml.value); }
+      catch {
+        const el = document.createElement('textarea');
+        el.value = sigHtml.value; document.body.appendChild(el);
+        el.select(); document.execCommand('copy');
+        document.body.removeChild(el);
+      }
+      copied.value = true;
+      setTimeout(() => (copied.value = false), 2200);
+    }
+
+    return {
+      isMobile, mobilePanel, desktopTab, activeTab, guideOs,
+      previewAreaEl, canvasStyle,
+      sig, copied, fullName, sigHtml, copyHtml,
+    };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
