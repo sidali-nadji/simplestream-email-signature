@@ -594,7 +594,7 @@ createApp({
     // Preview: single logo + direct colors so the canvas reflects the chosen theme
     const previewHtml = computed(() => {
       const dark = previewDark.value;
-      return '<p style="line-height:0px;font-size:10px;color:#FFFFFF;display:block;">-- </p>\n'
+      return '<br>\n'
         + buildTable(dark ? LOGO_DARK : LOGO_LIGHT, dark ? TC_DARK : TC_LIGHT, dark ? BC_DARK : BC_LIGHT)
         + '\n<br>';
     });
