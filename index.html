@@ -37,7 +37,7 @@
     /* ── DESKTOP LAYOUT ── */
     .layout {
       display: grid;
-      grid-template-columns: 300px 1fr;
+      grid-template-columns: 280px 1fr;
       flex: 1;
       overflow: hidden;
       min-height: 0;
@@ -68,31 +68,14 @@
     label { font-size: 10.5px; color: #7070a0; font-weight: 500; }
 
     input[type="text"], input[type="email"],
-    input[type="url"], input[type="tel"], textarea {
+    input[type="url"], input[type="tel"] {
       background: #13131e; border: 1px solid #20202e; border-radius: 5px;
       padding: 6px 9px; font-size: 12.5px; color: #d8d8e8;
       outline: none; transition: border-color 0.12s;
       width: 100%; font-family: inherit;
     }
-    textarea { resize: vertical; min-height: 46px; line-height: 1.5; }
-    input:focus, textarea:focus { border-color: #3d3dcc; }
-    input::placeholder, textarea::placeholder { color: #30304a; }
-
-    .color-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-    .color-wrap {
-      display: flex; align-items: center; gap: 7px;
-      background: #13131e; border: 1px solid #20202e;
-      border-radius: 5px; padding: 5px 8px;
-    }
-    input[type="color"] {
-      width: 18px; height: 18px; border: none; border-radius: 3px;
-      cursor: pointer; background: none; padding: 0; flex-shrink: 0;
-    }
-    .hex-input {
-      font-size: 11px; color: #7070a0;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      background: none; border: none; outline: none; width: 60px;
-    }
+    input:focus { border-color: #3d3dcc; }
+    input::placeholder { color: #30304a; }
 
     .section-divider { height: 1px; background: #1a1a28; }
 
@@ -121,12 +104,12 @@
 
     .preview-toolbar {
       padding: 10px 20px; border-bottom: 1px solid #1a1a28;
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex; align-items: center; gap: 10px;
       flex-shrink: 0;
     }
 
     .tabs {
-      display: flex; gap: 2px;
+      display: flex; gap: 2px; flex: 1;
       background: #13131e; border-radius: 6px; padding: 3px;
       border: 1px solid #20202e;
     }
@@ -137,9 +120,18 @@
     }
     .tab-btn.active { background: #1e1e32; color: #d8d8e8; }
 
+    .theme-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 6px; flex-shrink: 0;
+      border: 1px solid #20202e; background: #13131e;
+      color: #7070a0; cursor: pointer; transition: all 0.12s;
+    }
+    .theme-btn:hover { background: #1e1e32; color: #d8d8e8; }
+    .theme-btn svg { width: 14px; height: 14px; }
+
     .copy-btn {
       display: flex; align-items: center; gap: 6px;
-      padding: 6px 14px; border-radius: 6px;
+      padding: 6px 14px; border-radius: 6px; flex-shrink: 0;
       border: 1px solid #30308844; background: #18182a;
       color: #8888cc; font-size: 11.5px; font-weight: 600;
       cursor: pointer; transition: all 0.12s; letter-spacing: 0.01em;
@@ -164,15 +156,6 @@
       transition: background 0.2s;
     }
     .sig-canvas.dark-preview { background: #1c1c28; }
-
-    .theme-btn {
-      display: flex; align-items: center; justify-content: center;
-      width: 30px; height: 30px; border-radius: 6px;
-      border: 1px solid #20202e; background: #13131e;
-      color: #7070a0; cursor: pointer; transition: all 0.12s; flex-shrink: 0;
-    }
-    .theme-btn:hover { background: #1e1e32; color: #d8d8e8; }
-    .theme-btn svg { width: 14px; height: 14px; }
 
     /* ── CODE VIEW ── */
     .code-view { width: 100%; height: 100%; background: #0a0a0f; overflow: auto; }
@@ -277,7 +260,6 @@
       .preview-panel.panel-hidden { display: none; }
 
       .preview-toolbar { padding: 8px 14px; }
-
       .preview-toolbar .tabs { display: none; }
 
       .preview-area {
@@ -314,10 +296,6 @@
           <div class="field">
             <label>Website URL</label>
             <input type="url" v-model="sig.companyUrl" placeholder="https://www.simplestream.com/" />
-          </div>
-          <div class="field">
-            <label>Logo URL</label>
-            <input type="url" v-model="sig.logoUrl" placeholder="https://…/logo.png" />
           </div>
         </div>
       </div>
@@ -362,53 +340,6 @@
         </div>
       </div>
 
-      <div class="section-divider"></div>
-
-      <div>
-        <div class="section-label">Style — Light</div>
-        <div class="color-row">
-          <div class="field">
-            <label>Text color</label>
-            <div class="color-wrap">
-              <input type="color" v-model="sig.textColor" />
-              <input class="hex-input" type="text" v-model="sig.textColor" maxlength="7" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Border color</label>
-            <div class="color-wrap">
-              <input type="color" v-model="sig.sepColor" />
-              <input class="hex-input" type="text" v-model="sig.sepColor" maxlength="7" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-divider"></div>
-
-      <div>
-        <div class="toggle-row" style="margin-bottom:9px;">
-          <div class="section-label" style="margin-bottom:0;">Style — Dark mode</div>
-          <label class="toggle"><input type="checkbox" v-model="sig.darkMode" /><span class="toggle-slider"></span></label>
-        </div>
-        <div class="color-row" v-show="sig.darkMode">
-          <div class="field">
-            <label>Dark text color</label>
-            <div class="color-wrap">
-              <input type="color" v-model="sig.darkTextColor" />
-              <input class="hex-input" type="text" v-model="sig.darkTextColor" maxlength="7" />
-            </div>
-          </div>
-          <div class="field">
-            <label>Dark border color</label>
-            <div class="color-wrap">
-              <input type="color" v-model="sig.darkBorderColor" />
-              <input class="hex-input" type="text" v-model="sig.darkBorderColor" maxlength="7" />
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div><!-- /form-panel -->
 
     <!-- ── PREVIEW PANEL ── -->
@@ -420,9 +351,10 @@
           <button class="tab-btn" :class="{ active: activeTab === 'html' }" @click="desktopTab = 'html'">HTML</button>
           <button class="tab-btn" :class="{ active: activeTab === 'guide' }" @click="desktopTab = 'guide'">Outlook guide</button>
         </div>
-        <button class="theme-btn" v-show="activeTab === 'preview'" @click="previewDark = !previewDark" :title="previewDark ? 'Switch to light preview' : 'Switch to dark preview'">
+        <button class="theme-btn" v-show="activeTab === 'preview'" @click="previewDark = !previewDark" :title="previewDark ? 'Light preview' : 'Dark preview'">
           <svg v-if="previewDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
             <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
             <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
             <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
@@ -444,11 +376,11 @@
       </div>
 
       <div class="preview-area" ref="previewAreaEl">
-        <!-- SIGNATURE PREVIEW -->
+        <!-- SIGNATURE PREVIEW: uses previewHtml (right logo + colors for current theme) -->
         <div v-show="activeTab === 'preview'" class="sig-canvas" :class="{ 'dark-preview': previewDark }" :style="canvasStyle">
-          <div v-html="sigHtml"></div>
+          <div v-html="previewHtml"></div>
         </div>
-        <!-- HTML SOURCE -->
+        <!-- HTML SOURCE: shows the full email-output HTML (dual logos + media query) -->
         <div v-show="activeTab === 'html'" class="code-view">
           <pre>{{ sigHtml }}</pre>
         </div>
@@ -583,13 +515,20 @@
 <script>
 const { createApp, reactive, computed, ref, onMounted, onUnmounted } = Vue;
 
+const LOGO_LIGHT = 'https://assets.simplestreamcdn.com/simplestream/signature/simplestream-light.png';
+const LOGO_DARK  = 'https://assets.simplestreamcdn.com/simplestream/signature/simplestream-dark.png';
+const TC_LIGHT   = '#091D41';
+const TC_DARK    = '#ffffff';
+const BC_LIGHT   = '#bbbbbb';
+const BC_DARK    = '#444466';
+
 createApp({
   setup() {
-    const isMobile     = ref(false);
-    const mobilePanel  = ref('edit');
-    const desktopTab   = ref('preview');
-    const guideOs      = ref('windows');
-    const previewDark  = ref(false);
+    const isMobile    = ref(false);
+    const mobilePanel = ref('edit');
+    const desktopTab  = ref('preview');
+    const guideOs     = ref('windows');
+    const previewDark = ref(false);
 
     const activeTab = computed(() => {
       if (isMobile.value) {
@@ -607,80 +546,88 @@ createApp({
       isMobile.value = window.innerWidth < 768;
       if (!previewAreaEl.value) return;
       const padH = isMobile.value ? 32 : 80;
-      const canvasPad = 64;
-      const available = previewAreaEl.value.clientWidth - padH - canvasPad;
+      const available = previewAreaEl.value.clientWidth - padH - 64;
       sigZoom.value = Math.min(1, available / 500);
     }
 
-    onMounted(() => {
-      recalcZoom();
-      window.addEventListener('resize', recalcZoom);
-    });
-    onUnmounted(() => {
-      window.removeEventListener('resize', recalcZoom);
-    });
+    onMounted(() => { recalcZoom(); window.addEventListener('resize', recalcZoom); });
+    onUnmounted(() => window.removeEventListener('resize', recalcZoom));
 
-    const canvasStyle = computed(() =>
-      sigZoom.value < 1 ? { zoom: sigZoom.value } : {}
-    );
+    const canvasStyle = computed(() => sigZoom.value < 1 ? { zoom: sigZoom.value } : {});
 
     const copied = ref(false);
     const sig = reactive({
       company:    'Simplestream',
       companyUrl: 'https://www.simplestream.com/',
-      logoUrl:    'https://assets.simplestreamcdn.com/simplestream/signature/simplestream-logo.png',
       firstName:  'John',
       lastName:   'Doe',
       role:       'Senior Marketing Analyst',
-      phone:          '+44 7890 123456',
-      showPhone:      true,
-      textColor:      '#091D41',
-      sepColor:       '#bbbbbb',
-      darkMode:       true,
-      darkTextColor:  '#c8d4e8',
-      darkBorderColor:'#3a4060',
+      phone:      '+44 7890 123456',
+      showPhone:  true,
     });
 
-    const sigHtml = computed(() => {
-      const tc = sig.textColor;
-      const sc = sig.sepColor;
-      const f  = "font-family:'Trebuchet MS',Arial,sans-serif;";
+    const F = "font-family:'Trebuchet MS',Arial,sans-serif;";
+    const SPACER = '<table width="1" cellpadding="0" cellspacing="0" border="0" style="mso-table-lspace:0pt;mso-table-rspace:0pt;"><tr><td height="4" style="font-size:0;line-height:0;mso-line-height-rule:exactly;"> </td></tr></table>';
 
-      const nameHtml = (sig.firstName || 'FIRSTNAME').toUpperCase()
-        + '&nbsp;'
-        + (sig.lastName || 'LASTNAME').toUpperCase();
-
-      // Nested table spacer: reliable height gap in Outlook 2007-2013 Word engine
-      const spacer = '<table width="1" cellpadding="0" cellspacing="0" border="0" style="mso-table-lspace:0pt;mso-table-rspace:0pt;">'
-        + '<tr><td height="4" style="font-size:0;line-height:0;mso-line-height-rule:exactly;"> </td></tr></table>';
-
-      const phoneBlock = (sig.showPhone && sig.phone)
-        ? '<br>\n' + spacer + '\n<span class="ss-t" style="color:' + tc + ';">' + sig.phone + '</span>'
+    function buildTable(logoUrl, tc, bc) {
+      const name = (sig.firstName || 'FIRSTNAME').toUpperCase() + '&nbsp;' + (sig.lastName || 'LASTNAME').toUpperCase();
+      const phone = (sig.showPhone && sig.phone)
+        ? '<br>\n' + SPACER + '\n<span class="sig-text" style="color:' + tc + ';">' + sig.phone + '</span>'
         : '';
-
-      // Dark mode: <style> block with class overrides using !important.
-      // Inline styles alone cannot be overridden by @media queries without this.
-      // Supported in Apple Mail and Outlook.com; Outlook desktop applies its own transform.
-      const darkStyle = sig.darkMode
-        ? '<style type="text/css">@media (prefers-color-scheme:dark){'
-          + '.ss-t{color:' + sig.darkTextColor + ' !important;}'
-          + '.ss-b{border-left-color:' + sig.darkBorderColor + ' !important;}'
-          + '}</style>\n'
-        : '';
-
       return (
-darkStyle
-+ '<p style="line-height:0px;font-size:10px;color:#FFFFFF;display:block;">-- </p>\n'
-+ '<table cellspacing="0" cellpadding="0" border="0" style="line-height:0px;font-size:0px;' + f + 'color:' + tc + ';white-space:nowrap;display:block;mso-table-lspace:0pt;mso-table-rspace:0pt;">\n'
+'<table cellspacing="0" cellpadding="0" border="0" style="line-height:0px;font-size:0px;' + F + 'color:' + tc + ';white-space:nowrap;display:block;mso-table-lspace:0pt;mso-table-rspace:0pt;">\n'
 + '  <tr>\n'
 + '    <td valign="middle" style="padding-right:15px;">\n'
 + '      <a href="' + sig.companyUrl + '" target="_blank" style="text-decoration:none;">\n'
-+ '        <img src="' + sig.logoUrl + '" width="170" border="0" alt="' + sig.company + '" style="display:block;outline:none;text-decoration:none;">\n'
++ '        <img src="' + logoUrl + '" width="170" border="0" alt="' + sig.company + '" style="display:block;outline:none;text-decoration:none;">\n'
 + '      </a>\n'
 + '    </td>\n'
-+ '    <td class="ss-b" style="padding-left:15px;border-left:solid 0.5px ' + sc + ';line-height:19px;font-size:13px;' + f + 'color:' + tc + ';">\n'
-+ '      <b class="ss-t" style="font-size:14.5px;font-weight:bold;' + f + 'color:' + tc + ';">' + nameHtml + '</b><br>\n'
-+ '      <span class="ss-t" style="color:' + tc + ';">' + (sig.role || 'Job Title') + '</span>' + phoneBlock + '\n'
++ '    <td class="sig-border" style="padding-left:15px;border-left:solid 0.5px ' + bc + ';line-height:19px;font-size:13px;' + F + 'color:' + tc + ';">\n'
++ '      <b class="sig-text" style="font-size:14.5px;font-weight:bold;' + F + 'color:' + tc + ';">' + name + '</b><br>\n'
++ '      <span class="sig-text" style="color:' + tc + ';">' + (sig.role || 'Job Title') + '</span>' + phone + '\n'
++ '    </td>\n'
++ '  </tr>\n'
++ '</table>'
+      );
+    }
+
+    // Preview: single logo + direct colors so the canvas reflects the chosen theme
+    const previewHtml = computed(() => {
+      const dark = previewDark.value;
+      return '<p style="line-height:0px;font-size:10px;color:#FFFFFF;display:block;">-- </p>\n'
+        + buildTable(dark ? LOGO_DARK : LOGO_LIGHT, dark ? TC_DARK : TC_LIGHT, dark ? BC_DARK : BC_LIGHT)
+        + '\n<br>';
+    });
+
+    // Output: dual logos (light hidden in dark mode via CSS) + meta + @media block
+    const sigHtml = computed(() => {
+      const name = (sig.firstName || 'FIRSTNAME').toUpperCase() + '&nbsp;' + (sig.lastName || 'LASTNAME').toUpperCase();
+      const phone = (sig.showPhone && sig.phone)
+        ? '<br>\n' + SPACER + '\n<span class="sig-text" style="color:' + TC_LIGHT + ';">' + sig.phone + '</span>'
+        : '';
+      return (
+'<meta name="color-scheme" content="light dark">\n'
++ '<meta name="supported-color-schemes" content="light dark">\n'
++ '<style type="text/css">\n'
++ '@media (prefers-color-scheme:dark){\n'
++ '  .sig-text{color:' + TC_DARK + ' !important;}\n'
++ '  .sig-border{border-left-color:' + BC_DARK + ' !important;}\n'
++ '  .sig-logo-l{display:none !important;}\n'
++ '  .sig-logo-d{display:block !important;}\n'
++ '}\n'
++ '</style>\n'
++ '<p style="line-height:0px;font-size:10px;color:#FFFFFF;display:block;">-- </p>\n'
++ '<table cellspacing="0" cellpadding="0" border="0" style="line-height:0px;font-size:0px;' + F + 'color:' + TC_LIGHT + ';white-space:nowrap;display:block;mso-table-lspace:0pt;mso-table-rspace:0pt;">\n'
++ '  <tr>\n'
++ '    <td valign="middle" style="padding-right:15px;">\n'
++ '      <a href="' + sig.companyUrl + '" target="_blank" style="text-decoration:none;">\n'
++ '        <img class="sig-logo-l" src="' + LOGO_LIGHT + '" width="170" border="0" alt="' + sig.company + '" style="display:block;outline:none;text-decoration:none;">\n'
++ '        <img class="sig-logo-d" src="' + LOGO_DARK  + '" width="170" border="0" alt="' + sig.company + '" style="display:none;outline:none;text-decoration:none;">\n'
++ '      </a>\n'
++ '    </td>\n'
++ '    <td class="sig-border" style="padding-left:15px;border-left:solid 0.5px ' + BC_LIGHT + ';line-height:19px;font-size:13px;' + F + 'color:' + TC_LIGHT + ';">\n'
++ '      <b class="sig-text" style="font-size:14.5px;font-weight:bold;' + F + 'color:' + TC_LIGHT + ';">' + name + '</b><br>\n'
++ '      <span class="sig-text" style="color:' + TC_LIGHT + ';">' + (sig.role || 'Job Title') + '</span>' + phone + '\n'
 + '    </td>\n'
 + '  </tr>\n'
 + '</table>\n'
@@ -691,7 +638,6 @@ darkStyle
     async function copySig() {
       const html = sigHtml.value;
       try {
-        // ClipboardItem with text/html pastes as formatted content directly in Outlook
         await navigator.clipboard.write([
           new ClipboardItem({
             'text/html':  new Blob([html], { type: 'text/html' }),
@@ -699,7 +645,6 @@ darkStyle
           })
         ]);
       } catch {
-        // Fallback for browsers that don't support ClipboardItem
         try { await navigator.clipboard.writeText(html); }
         catch {
           const el = document.createElement('textarea');
@@ -715,7 +660,7 @@ darkStyle
     return {
       isMobile, mobilePanel, desktopTab, activeTab, guideOs,
       previewDark, previewAreaEl, canvasStyle,
-      sig, copied, sigHtml, copySig,
+      sig, copied, previewHtml, sigHtml, copySig,
     };
   }
 }).mount('#app');
