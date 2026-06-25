@@ -541,7 +541,7 @@ createApp({
     function buildTable(logoUrl, tc, bc) {
       const name = (sig.name || 'YOUR NAME').toUpperCase().replace(/ /g, '&nbsp;');
       const phone = (sig.phone.trim())
-        ? '<br>\n' + SPACER + '\n<span class="sig-text" style="color:' + tc + ';">' + sig.phone + '</span>'
+        ? '<br>\n' + SPACER + '\n<span class="sig-text" style="color:' + tc + ';">' + sig.phone.replace(/ /g, '&nbsp;') + '</span>'
         : '';
       return (
 '<table cellspacing="0" cellpadding="0" border="0" style="line-height:0px;font-size:0px;' + F + 'color:' + tc + ';white-space:nowrap;display:block;mso-table-lspace:0pt;mso-table-rspace:0pt;">\n'
@@ -572,7 +572,7 @@ createApp({
     const sigHtml = computed(() => {
       const name = (sig.name || 'YOUR NAME').toUpperCase().replace(/ /g, '&nbsp;');
       const phone = (sig.phone.trim())
-        ? '<br>\n' + SPACER + '\n<span class="sig-text" style="color:' + TC_LIGHT + ';">' + sig.phone + '</span>'
+        ? '<br>\n' + SPACER + '\n<span class="sig-text" style="color:' + TC_LIGHT + ';">' + sig.phone.replace(/ /g, '&nbsp;') + '</span>'
         : '';
       return (
 '<meta name="color-scheme" content="light dark">\n'
