@@ -37,7 +37,7 @@
     /* ── DESKTOP LAYOUT ── */
     .layout {
       display: grid;
-      grid-template-columns: 320px 1fr;
+      grid-template-columns: 300px 1fr;
       flex: 1;
       overflow: hidden;
       min-height: 0;
@@ -161,7 +161,6 @@
       padding: 28px 32px 24px;
       display: inline-block;
       box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 8px 40px rgba(0,0,0,0.7);
-      /* zoom applied inline by Vue */
     }
 
     /* ── CODE VIEW ── */
@@ -250,9 +249,6 @@
         grid-template-rows: 1fr;
       }
 
-      /* Force both panels into the same grid cell (row 1 / col 1).
-         Without this, grid auto-placement puts preview-panel in row 2
-         which is auto-height — no constraint means overflow:auto never fires. */
       .form-panel,
       .preview-panel {
         grid-row: 1;
@@ -263,18 +259,16 @@
         border-right: none;
         border-bottom: none;
         padding: 14px 12px 20px;
+        overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
       }
       .form-panel.panel-hidden,
       .preview-panel.panel-hidden { display: none; }
 
       .preview-toolbar { padding: 8px 14px; }
 
-      /* hide desktop tab switcher on mobile — bottom nav handles it */
       .preview-toolbar .tabs { display: none; }
 
-      /* align-items:center + overflow:auto clips the top of content — use flex-start so
-         the full canvas is reachable by scrolling */
-      .form-panel { overflow-y: scroll; -webkit-overflow-scrolling: touch; }
       .preview-area {
         padding: 24px 16px;
         align-items: flex-start;
@@ -291,7 +285,7 @@
 <div id="app">
   <header>
     <h1>Email Signature Builder</h1>
-    <span class="badge">Outlook · Apple Mail · Gmail</span>
+    <span class="badge">Simplestream</span>
   </header>
 
   <div class="layout">
@@ -313,10 +307,6 @@
           <div class="field">
             <label>Logo URL</label>
             <input type="url" v-model="sig.logoUrl" placeholder="https://…/logo.png" />
-          </div>
-          <div class="field">
-            <label>Office address</label>
-            <textarea v-model="sig.address" placeholder="Company Ltd, Floor, Street, City, Postcode"></textarea>
           </div>
         </div>
       </div>
@@ -349,60 +339,14 @@
         <div class="section-label">Contact</div>
         <div class="field-group">
           <div class="field">
-            <label>Email address</label>
-            <input type="email" v-model="sig.email" placeholder="jane@simplestream.com" />
-          </div>
-          <div class="field">
-            <label>Mobile phone</label>
-            <input type="tel" v-model="sig.mobilePhone" placeholder="+44 7712 345678" />
-          </div>
-          <div class="field">
-            <label>Office / direct phone</label>
-            <input type="tel" v-model="sig.officePhone" placeholder="+44 20 7946 0321" />
+            <label>Phone number</label>
+            <input type="tel" v-model="sig.phone" placeholder="+44 7890 123456" />
           </div>
         </div>
         <div class="field-group" style="margin-top:9px;">
           <div class="toggle-row">
-            <label>Show email</label>
-            <label class="toggle"><input type="checkbox" v-model="sig.showEmail" /><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-row">
-            <label>Show mobile</label>
-            <label class="toggle"><input type="checkbox" v-model="sig.showMobile" /><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-row">
-            <label>Show office phone</label>
-            <label class="toggle"><input type="checkbox" v-model="sig.showOffice" /><span class="toggle-slider"></span></label>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-divider"></div>
-
-      <div>
-        <div class="section-label">Social</div>
-        <div class="field-group">
-          <div class="field">
-            <label>LinkedIn URL</label>
-            <input type="url" v-model="sig.linkedin" placeholder="https://linkedin.com/company/…" />
-          </div>
-          <div class="field">
-            <label>Twitter / X URL</label>
-            <input type="url" v-model="sig.twitter" placeholder="https://twitter.com/…" />
-          </div>
-        </div>
-        <div class="field-group" style="margin-top:9px;">
-          <div class="toggle-row">
-            <label>Website icon</label>
-            <label class="toggle"><input type="checkbox" v-model="sig.showWebIcon" /><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-row">
-            <label>LinkedIn icon</label>
-            <label class="toggle"><input type="checkbox" v-model="sig.showLinkedin" /><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-row">
-            <label>Twitter / X icon</label>
-            <label class="toggle"><input type="checkbox" v-model="sig.showTwitter" /><span class="toggle-slider"></span></label>
+            <label>Show phone number</label>
+            <label class="toggle"><input type="checkbox" v-model="sig.showPhone" /><span class="toggle-slider"></span></label>
           </div>
         </div>
       </div>
@@ -413,14 +357,14 @@
         <div class="section-label">Style</div>
         <div class="color-row">
           <div class="field">
-            <label>Text &amp; icon color</label>
+            <label>Text color</label>
             <div class="color-wrap">
               <input type="color" v-model="sig.textColor" />
               <input class="hex-input" type="text" v-model="sig.textColor" maxlength="7" />
             </div>
           </div>
           <div class="field">
-            <label>Divider color</label>
+            <label>Border color</label>
             <div class="color-wrap">
               <input type="color" v-model="sig.sepColor" />
               <input class="hex-input" type="text" v-model="sig.sepColor" maxlength="7" />
@@ -435,13 +379,12 @@
     <div class="preview-panel" :class="{ 'panel-hidden': isMobile && mobilePanel === 'edit' }">
 
       <div class="preview-toolbar">
-        <!-- desktop only: Preview / HTML tab switcher -->
         <div class="tabs">
           <button class="tab-btn" :class="{ active: activeTab === 'preview' }" @click="desktopTab = 'preview'">Preview</button>
           <button class="tab-btn" :class="{ active: activeTab === 'html' }" @click="desktopTab = 'html'">HTML</button>
           <button class="tab-btn" :class="{ active: activeTab === 'guide' }" @click="desktopTab = 'guide'">Outlook guide</button>
         </div>
-        <button class="copy-btn" :class="{ copied }" @click="copyHtml">
+        <button class="copy-btn" :class="{ copied }" @click="copySig">
           <svg v-if="!copied" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="9" width="13" height="13" rx="2"/>
             <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
@@ -449,7 +392,7 @@
           <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
-          {{ copied ? 'Copied!' : 'Copy HTML' }}
+          {{ copied ? 'Copied!' : 'Copy Signature' }}
         </button>
       </div>
 
@@ -478,36 +421,36 @@
               <div class="step">
                 <div class="step-num">1</div>
                 <div>
-                  <div class="step-title">Copy the signature HTML</div>
-                  <div class="step-desc">Click <strong>Copy HTML</strong> at the top right of this page.</div>
+                  <div class="step-title">Copy the signature</div>
+                  <div class="step-desc">Click <strong>Copy Signature</strong> at the top right. This copies the formatted signature — no file needed.</div>
                 </div>
               </div>
               <div class="step">
                 <div class="step-num">2</div>
-                <div>
-                  <div class="step-title">Open the Signatures folder</div>
-                  <div class="step-desc">Press <kbd>Win + R</kbd>, type <code>%APPDATA%\Microsoft\Signatures</code> and press <kbd>Enter</kbd>.</div>
-                </div>
-              </div>
-              <div class="step">
-                <div class="step-num">3</div>
-                <div>
-                  <div class="step-title">Save as an HTM file</div>
-                  <div class="step-desc">Open <strong>Notepad</strong>, paste with <kbd>Ctrl + V</kbd>, then <strong>File → Save As</strong>. Set <em>Save as type</em> to <strong>All Files</strong>, <em>Encoding</em> to <strong>UTF-8</strong>, and save the file as <code>YourName.htm</code> inside that Signatures folder.</div>
-                </div>
-              </div>
-              <div class="step">
-                <div class="step-num">4</div>
                 <div>
                   <div class="step-title">Open Outlook Signatures</div>
                   <div class="step-desc">In Outlook: <strong>File → Options → Mail → Signatures…</strong></div>
                 </div>
               </div>
               <div class="step">
+                <div class="step-num">3</div>
+                <div>
+                  <div class="step-title">Create a new signature</div>
+                  <div class="step-desc">Click <strong>New</strong> and type a name (e.g. your name), then click inside the signature editing area.</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">4</div>
+                <div>
+                  <div class="step-title">Paste the signature</div>
+                  <div class="step-desc">Press <kbd>Ctrl + V</kbd>. The formatted signature will appear directly — no copy from browser required.</div>
+                </div>
+              </div>
+              <div class="step">
                 <div class="step-num">5</div>
                 <div>
-                  <div class="step-title">Create and set as default</div>
-                  <div class="step-desc">Click <strong>New</strong> and type the same name you used for the file (without <code>.htm</code>). Under <em>Choose default signature</em>, pick it for <strong>New messages</strong> and <strong>Replies/forwards</strong>, then click <strong>OK</strong>.</div>
+                  <div class="step-title">Set as default</div>
+                  <div class="step-desc">Under <em>Choose default signature</em>, select it for <strong>New messages</strong> and <strong>Replies/forwards</strong>, then click <strong>OK</strong>.</div>
                 </div>
               </div>
             </div>
@@ -517,42 +460,35 @@
               <div class="step">
                 <div class="step-num">1</div>
                 <div>
-                  <div class="step-title">Copy the signature HTML</div>
-                  <div class="step-desc">Click <strong>Copy HTML</strong> at the top right of this page.</div>
+                  <div class="step-title">Copy the signature</div>
+                  <div class="step-desc">Click <strong>Copy Signature</strong> at the top right. This copies the formatted signature — no file needed.</div>
                 </div>
               </div>
               <div class="step">
                 <div class="step-num">2</div>
-                <div>
-                  <div class="step-title">Save as a plain HTML file</div>
-                  <div class="step-desc">Open <strong>TextEdit</strong>, go to <strong>Format → Make Plain Text</strong>, paste with <kbd>Cmd + V</kbd>, then save as <code>signature.htm</code>.</div>
-                </div>
-              </div>
-              <div class="step">
-                <div class="step-num">3</div>
-                <div>
-                  <div class="step-title">Render it in Safari</div>
-                  <div class="step-desc">Double-click <code>signature.htm</code> to open it in Safari. Press <kbd>Cmd + A</kbd> to select all, then <kbd>Cmd + C</kbd> to copy the rendered signature.</div>
-                </div>
-              </div>
-              <div class="step">
-                <div class="step-num">4</div>
                 <div>
                   <div class="step-title">Open Outlook Preferences</div>
                   <div class="step-desc">In Outlook for Mac: <strong>Outlook menu → Preferences → Signatures</strong>. Click <strong>+</strong> to add a new signature and give it a name.</div>
                 </div>
               </div>
               <div class="step">
-                <div class="step-num">5</div>
+                <div class="step-num">3</div>
                 <div>
-                  <div class="step-title">Paste and assign</div>
-                  <div class="step-desc">Click inside the signature edit area and press <kbd>Cmd + V</kbd>. Under <em>Default signatures</em>, select it for <strong>New messages</strong> and <strong>Replies &amp; Forwards</strong>, then close Preferences.</div>
+                  <div class="step-title">Paste the signature</div>
+                  <div class="step-desc">Click inside the signature editing area and press <kbd>Cmd + V</kbd>. The formatted signature will appear directly.</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num">4</div>
+                <div>
+                  <div class="step-title">Set as default</div>
+                  <div class="step-desc">Under <em>Default signatures</em>, select it for <strong>New messages</strong> and <strong>Replies &amp; Forwards</strong>, then close Preferences.</div>
                 </div>
               </div>
             </div>
 
             <div class="guide-note">
-              <strong>Note:</strong> The social icons in this signature are embedded as inline data URIs — they display without any external image hosting and will not be blocked by Outlook's image settings.
+              <strong>Tip:</strong> If the pasted signature loses its formatting, make sure you are clicking inside the signature edit area before pressing paste — clicking outside and then pasting may paste as plain text.
             </div>
           </div>
         </div>
@@ -600,44 +536,13 @@
 <script>
 const { createApp, reactive, computed, ref, onMounted, onUnmounted } = Vue;
 
-/* ── SVG icon helpers (data URIs — no external image requests) ── */
-function makeSvgUri(inner, bg) {
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">'
-    + '<circle cx="12" cy="12" r="12" fill="' + bg + '"/>'
-    + inner + '</svg>';
-  try { return 'data:image/svg+xml;base64,' + btoa(svg); }
-  catch  { return 'data:image/svg+xml,' + encodeURIComponent(svg); }
-}
-function iconGlobe(c) {
-  return makeSvgUri(
-    '<g fill="none" stroke="white" stroke-width="1.25" stroke-linecap="round">'
-    + '<circle cx="12" cy="12" r="6.5"/>'
-    + '<ellipse cx="12" cy="12" rx="2.9" ry="6.5"/>'
-    + '<line x1="5.5" y1="12" x2="18.5" y2="12"/>'
-    + '<path d="M6.5 9q5.5 1.6 11 0"/>'
-    + '<path d="M6.5 15q5.5-1.6 11 0"/>'
-    + '</g>', c);
-}
-function iconLinkedIn(c) {
-  return makeSvgUri(
-    '<rect x="7" y="11" width="2.1" height="6" rx=".3" fill="white"/>'
-    + '<circle cx="8.05" cy="8.5" r="1.15" fill="white"/>'
-    + '<path d="M11.5 11h2.1v.95c.5-.75 1.35-1.15 2.2-1.15 1.75 0 2.7 1.1 2.7 3.15V17h-2.1v-2.85c0-1.1-.4-1.65-1.25-1.65-.9 0-1.45.6-1.45 1.8V17h-2.2V11z" fill="white"/>', c);
-}
-function iconTwitter(c) {
-  return makeSvgUri(
-    '<path fill="white" d="M18.5 8.2c-.6.25-1.25.42-1.92.5.7-.41 1.22-1.07 1.47-1.85-.65.38-1.38.66-2.14.81-.62-.66-1.5-1.06-2.47-1.06-1.87 0-3.38 1.52-3.38 3.39 0 .27.03.52.08.77C7.47 10.63 5.14 9.27 3.56 7.22c-.28.49-.44 1.05-.44 1.66 0 1.15.58 2.16 1.47 2.75-.54-.02-1.05-.17-1.5-.41v.04c0 1.64 1.17 3 2.72 3.31-.28.08-.58.12-.89.12-.22 0-.43-.02-.63-.06.43 1.34 1.67 2.31 3.14 2.34-1.15.9-2.6 1.44-4.17 1.44-.27 0-.54-.02-.8-.05 1.48.95 3.24 1.5 5.14 1.5 6.16 0 9.53-5.1 9.53-9.53 0-.14 0-.29-.01-.43.65-.47 1.22-1.06 1.67-1.73l-.24.09z"/>', c);
-}
-
 createApp({
   setup() {
-    /* ── Responsive state ── */
     const isMobile     = ref(false);
-    const mobilePanel  = ref('edit');    // 'edit' | 'preview' | 'html' | 'guide'
-    const desktopTab   = ref('preview'); // 'preview' | 'html' | 'guide'
-    const guideOs      = ref('windows'); // 'windows' | 'mac'
+    const mobilePanel  = ref('edit');
+    const desktopTab   = ref('preview');
+    const guideOs      = ref('windows');
 
-    /* activeTab: on mobile, derived from mobilePanel; on desktop, from desktopTab */
     const activeTab = computed(() => {
       if (isMobile.value) {
         if (mobilePanel.value === 'html')  return 'html';
@@ -647,18 +552,16 @@ createApp({
       return desktopTab.value;
     });
 
-    /* ── Signature canvas zoom ── */
     const previewAreaEl = ref(null);
     const sigZoom = ref(1);
 
     function recalcZoom() {
       isMobile.value = window.innerWidth < 768;
       if (!previewAreaEl.value) return;
-      // Available width inside the preview-area (subtract its padding)
-      const padH = isMobile.value ? 32 : 80; // 16px×2 mobile, 40px×2 desktop
-      const canvasPad = 64;                    // 32px left + 32px right on .sig-canvas
+      const padH = isMobile.value ? 32 : 80;
+      const canvasPad = 64;
       const available = previewAreaEl.value.clientWidth - padH - canvasPad;
-      sigZoom.value = Math.min(1, available / 615);
+      sigZoom.value = Math.min(1, available / 500);
     }
 
     onMounted(() => {
@@ -673,95 +576,75 @@ createApp({
       sigZoom.value < 1 ? { zoom: sigZoom.value } : {}
     );
 
-    /* ── Form data ── */
     const copied = ref(false);
     const sig = reactive({
-      company:      'Simplestream',
-      companyUrl:   'https://www.simplestream.com/',
-      logoUrl:      'https://assets.simplestreamcdn.com/simplestream/signature/simplestream-logo.png',
-      address:      'Simplestream Ltd, 40 Long Acre, London, WC2E 9JT',
-      firstName:    'John',
-      lastName:     'Doe',
-      role:         'Senior Marketing Analyst',
-      email:        'john.doe@simplestream.com',
-      mobilePhone:  '+44 7712 345678',
-      officePhone:  '+44 0207 930 7809',
-      showEmail:    false,
-      showMobile:   false,
-      showOffice:   false,
-      linkedin:     'https://www.linkedin.com/company/simplestream-ltd',
-      twitter:      'https://twitter.com/simplestreamuk',
-      showWebIcon:  true,
-      showLinkedin: true,
-      showTwitter:  true,
-      textColor:    '#091D41',
-      sepColor:     '#bbbbbb',
+      company:    'Simplestream',
+      companyUrl: 'https://www.simplestream.com/',
+      logoUrl:    'https://assets.simplestreamcdn.com/simplestream/signature/simplestream-logo.png',
+      firstName:  'John',
+      lastName:   'Doe',
+      role:       'Senior Marketing Analyst',
+      phone:      '+44 7890 123456',
+      showPhone:  true,
+      textColor:  '#091D41',
+      sepColor:   '#bbbbbb',
     });
 
-    const fullName = computed(() =>
-      [sig.firstName, sig.lastName].filter(Boolean).join(' ').toUpperCase() || 'YOUR NAME'
-    );
-
-    /* ── Signature HTML (email-client safe: inline styles, tables, no external images) ── */
     const sigHtml = computed(() => {
       const tc = sig.textColor;
       const sc = sig.sepColor;
       const f  = "font-family:'Trebuchet MS',Arial,sans-serif;";
 
-      const lines = [];
-      if (sig.showMobile && sig.mobilePhone)
-        lines.push('M:&nbsp;<a href="tel:' + sig.mobilePhone.replace(/\s/g,'') + '" style="color:' + tc + ';text-decoration:none;">' + sig.mobilePhone + '</a>');
-      if (sig.showOffice && sig.officePhone)
-        lines.push('T:&nbsp;<a href="tel:' + sig.officePhone.replace(/\s/g,'') + '" style="color:' + tc + ';text-decoration:none;">' + sig.officePhone + '</a>');
-      if (sig.showEmail && sig.email)
-        lines.push('<a href="mailto:' + sig.email + '" style="color:' + tc + ';text-decoration:none;">' + sig.email + '</a>');
+      const nameHtml = (sig.firstName || 'FIRSTNAME').toUpperCase()
+        + '&nbsp;'
+        + (sig.lastName || 'LASTNAME').toUpperCase();
 
-      // Nested 1-row table spacer: more reliable than <div> in Outlook 2007-2013 Word engine
-      const spacerTable = '<table width="1" cellpadding="0" cellspacing="0" border="0" style="mso-table-lspace:0pt;mso-table-rspace:0pt;"><tr><td height="5" style="font-size:0;line-height:0;mso-line-height-rule:exactly;"> </td></tr></table>';
-      const contactBlock = lines.length
-        ? '\n' + spacerTable + '\n' + lines.join('<br>\n')
+      // Nested table spacer: reliable height gap in Outlook 2007-2013 Word engine
+      const spacer = '<table width="1" cellpadding="0" cellspacing="0" border="0" style="mso-table-lspace:0pt;mso-table-rspace:0pt;">'
+        + '<tr><td height="4" style="font-size:0;line-height:0;mso-line-height-rule:exactly;"> </td></tr></table>';
+
+      const phoneBlock = (sig.showPhone && sig.phone)
+        ? '<br>\n' + spacer + '\n' + sig.phone
         : '';
-      const roleBlock = sig.role ? '<br>\n' + sig.role : '';
-
-      const icons = [];
-      if (sig.showWebIcon  && sig.companyUrl) icons.push('<a href="' + sig.companyUrl + '" target="_blank" style="text-decoration:none;"><img src="' + iconGlobe(tc)    + '" width="24" height="24" border="0" alt="' + sig.company + '" style="display:inline-block;vertical-align:middle;"></a>');
-      if (sig.showLinkedin && sig.linkedin)   icons.push('<a href="' + sig.linkedin   + '" target="_blank" style="text-decoration:none;"><img src="' + iconLinkedIn(tc) + '" width="24" height="24" border="0" alt="LinkedIn" style="display:inline-block;vertical-align:middle;"></a>');
-      if (sig.showTwitter  && sig.twitter)    icons.push('<a href="' + sig.twitter    + '" target="_blank" style="text-decoration:none;"><img src="' + iconTwitter(tc)  + '" width="24" height="24" border="0" alt="Twitter"  style="display:inline-block;vertical-align:middle;"></a>');
-      const socialBlock = icons.join('&nbsp;&nbsp;&nbsp;');
 
       return (
-'<table width="615" align="left" cellspacing="0" cellpadding="0" border="0" style="' + f + 'color:' + tc + ';border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">\n'
+'<p style="line-height:0px;font-size:10px;color:#FFFFFF;display:block;">-- </p>\n'
++ '<table cellspacing="0" cellpadding="0" border="0" style="line-height:0px;font-size:0px;' + f + 'color:' + tc + ';white-space:nowrap;display:block;mso-table-lspace:0pt;mso-table-rspace:0pt;">\n'
 + '  <tr>\n'
-+ '    <td width="190" rowspan="2" valign="middle" style="padding-right:15px;border-right:1px solid ' + sc + ';">\n'
++ '    <td style="padding-right:15px;">\n'
 + '      <a href="' + sig.companyUrl + '" target="_blank" style="text-decoration:none;">\n'
-+ '        <img src="' + sig.logoUrl + '" width="175" border="0" alt="' + sig.company + '" style="display:block;outline:none;text-decoration:none;">\n'
++ '        <img src="' + sig.logoUrl + '" width="170" border="0" alt="' + sig.company + '" style="display:block;outline:none;text-decoration:none;">\n'
 + '      </a>\n'
 + '    </td>\n'
-+ '    <td width="15" rowspan="2"></td>\n'
-+ '    <td width="260" valign="top" style="padding-top:2px;white-space:nowrap;line-height:20px;color:' + tc + ';font-size:13px;' + f + '">\n'
-+ '      <b style="font-size:14.5px;font-weight:bold;color:' + tc + ';' + f + '">' + fullName.value + '</b>' + roleBlock + contactBlock + '\n'
-+ '    </td>\n'
-+ '    <td width="120" align="right" valign="top" style="padding-top:6px;font-size:10px;">\n'
-+ '      ' + socialBlock + '\n'
-+ '    </td>\n'
-+ '    <td width="30"></td>\n'
-+ '  </tr>\n'
-+ '  <tr>\n'
-+ '    <td width="410" colspan="3" height="28" valign="middle" style="white-space:nowrap;mso-line-height-rule:exactly;line-height:17px;color:' + tc + ';font-size:11.5px;' + f + '">\n'
-+ '      ' + sig.address + '\n'
++ '    <td style="padding-left:15px;border-left:solid 0.5px ' + sc + ';line-height:19px;font-size:13px;' + f + 'color:' + tc + ';">\n'
++ '      <b style="font-size:14.5px;font-weight:bold;' + f + 'color:' + tc + ';">' + nameHtml + '</b><br>\n'
++ '      ' + (sig.role || 'Job Title') + phoneBlock + '\n'
 + '    </td>\n'
 + '  </tr>\n'
-+ '</table>'
++ '</table>\n'
++ '<br>'
       );
     });
 
-    async function copyHtml() {
-      try { await navigator.clipboard.writeText(sigHtml.value); }
-      catch {
-        const el = document.createElement('textarea');
-        el.value = sigHtml.value; document.body.appendChild(el);
-        el.select(); document.execCommand('copy');
-        document.body.removeChild(el);
+    async function copySig() {
+      const html = sigHtml.value;
+      try {
+        // ClipboardItem with text/html pastes as formatted content directly in Outlook
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/html':  new Blob([html], { type: 'text/html' }),
+            'text/plain': new Blob([html], { type: 'text/plain' }),
+          })
+        ]);
+      } catch {
+        // Fallback for browsers that don't support ClipboardItem
+        try { await navigator.clipboard.writeText(html); }
+        catch {
+          const el = document.createElement('textarea');
+          el.value = html; document.body.appendChild(el);
+          el.select(); document.execCommand('copy');
+          document.body.removeChild(el);
+        }
       }
       copied.value = true;
       setTimeout(() => (copied.value = false), 2200);
@@ -770,7 +653,7 @@ createApp({
     return {
       isMobile, mobilePanel, desktopTab, activeTab, guideOs,
       previewAreaEl, canvasStyle,
-      sig, copied, fullName, sigHtml, copyHtml,
+      sig, copied, sigHtml, copySig,
     };
   }
 }).mount('#app');
