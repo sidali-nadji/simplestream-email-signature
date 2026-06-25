@@ -161,7 +161,18 @@
       padding: 28px 32px 24px;
       display: inline-block;
       box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 8px 40px rgba(0,0,0,0.7);
+      transition: background 0.2s;
     }
+    .sig-canvas.dark-preview { background: #1c1c28; }
+
+    .theme-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 6px;
+      border: 1px solid #20202e; background: #13131e;
+      color: #7070a0; cursor: pointer; transition: all 0.12s; flex-shrink: 0;
+    }
+    .theme-btn:hover { background: #1e1e32; color: #d8d8e8; }
+    .theme-btn svg { width: 14px; height: 14px; }
 
     /* ── CODE VIEW ── */
     .code-view { width: 100%; height: 100%; background: #0a0a0f; overflow: auto; }
@@ -354,7 +365,7 @@
       <div class="section-divider"></div>
 
       <div>
-        <div class="section-label">Style</div>
+        <div class="section-label">Style — Light</div>
         <div class="color-row">
           <div class="field">
             <label>Text color</label>
@@ -373,6 +384,31 @@
         </div>
       </div>
 
+      <div class="section-divider"></div>
+
+      <div>
+        <div class="toggle-row" style="margin-bottom:9px;">
+          <div class="section-label" style="margin-bottom:0;">Style — Dark mode</div>
+          <label class="toggle"><input type="checkbox" v-model="sig.darkMode" /><span class="toggle-slider"></span></label>
+        </div>
+        <div class="color-row" v-show="sig.darkMode">
+          <div class="field">
+            <label>Dark text color</label>
+            <div class="color-wrap">
+              <input type="color" v-model="sig.darkTextColor" />
+              <input class="hex-input" type="text" v-model="sig.darkTextColor" maxlength="7" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Dark border color</label>
+            <div class="color-wrap">
+              <input type="color" v-model="sig.darkBorderColor" />
+              <input class="hex-input" type="text" v-model="sig.darkBorderColor" maxlength="7" />
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /form-panel -->
 
     <!-- ── PREVIEW PANEL ── -->
@@ -384,6 +420,17 @@
           <button class="tab-btn" :class="{ active: activeTab === 'html' }" @click="desktopTab = 'html'">HTML</button>
           <button class="tab-btn" :class="{ active: activeTab === 'guide' }" @click="desktopTab = 'guide'">Outlook guide</button>
         </div>
+        <button class="theme-btn" v-show="activeTab === 'preview'" @click="previewDark = !previewDark" :title="previewDark ? 'Switch to light preview' : 'Switch to dark preview'">
+          <svg v-if="previewDark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </button>
         <button class="copy-btn" :class="{ copied }" @click="copySig">
           <svg v-if="!copied" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="9" width="13" height="13" rx="2"/>
@@ -398,7 +445,7 @@
 
       <div class="preview-area" ref="previewAreaEl">
         <!-- SIGNATURE PREVIEW -->
-        <div v-show="activeTab === 'preview'" class="sig-canvas" :style="canvasStyle">
+        <div v-show="activeTab === 'preview'" class="sig-canvas" :class="{ 'dark-preview': previewDark }" :style="canvasStyle">
           <div v-html="sigHtml"></div>
         </div>
         <!-- HTML SOURCE -->
@@ -542,6 +589,7 @@ createApp({
     const mobilePanel  = ref('edit');
     const desktopTab   = ref('preview');
     const guideOs      = ref('windows');
+    const previewDark  = ref(false);
 
     const activeTab = computed(() => {
       if (isMobile.value) {
@@ -584,10 +632,13 @@ createApp({
       firstName:  'John',
       lastName:   'Doe',
       role:       'Senior Marketing Analyst',
-      phone:      '+44 7890 123456',
-      showPhone:  true,
-      textColor:  '#091D41',
-      sepColor:   '#bbbbbb',
+      phone:          '+44 7890 123456',
+      showPhone:      true,
+      textColor:      '#091D41',
+      sepColor:       '#bbbbbb',
+      darkMode:       true,
+      darkTextColor:  '#c8d4e8',
+      darkBorderColor:'#3a4060',
     });
 
     const sigHtml = computed(() => {
@@ -604,11 +655,22 @@ createApp({
         + '<tr><td height="4" style="font-size:0;line-height:0;mso-line-height-rule:exactly;"> </td></tr></table>';
 
       const phoneBlock = (sig.showPhone && sig.phone)
-        ? '<br>\n' + spacer + '\n' + sig.phone
+        ? '<br>\n' + spacer + '\n<span class="ss-t" style="color:' + tc + ';">' + sig.phone + '</span>'
+        : '';
+
+      // Dark mode: <style> block with class overrides using !important.
+      // Inline styles alone cannot be overridden by @media queries without this.
+      // Supported in Apple Mail and Outlook.com; Outlook desktop applies its own transform.
+      const darkStyle = sig.darkMode
+        ? '<style type="text/css">@media (prefers-color-scheme:dark){'
+          + '.ss-t{color:' + sig.darkTextColor + ' !important;}'
+          + '.ss-b{border-left-color:' + sig.darkBorderColor + ' !important;}'
+          + '}</style>\n'
         : '';
 
       return (
-'<p style="line-height:0px;font-size:10px;color:#FFFFFF;display:block;">-- </p>\n'
+darkStyle
++ '<p style="line-height:0px;font-size:10px;color:#FFFFFF;display:block;">-- </p>\n'
 + '<table cellspacing="0" cellpadding="0" border="0" style="line-height:0px;font-size:0px;' + f + 'color:' + tc + ';white-space:nowrap;display:block;mso-table-lspace:0pt;mso-table-rspace:0pt;">\n'
 + '  <tr>\n'
 + '    <td valign="middle" style="padding-right:15px;">\n'
@@ -616,9 +678,9 @@ createApp({
 + '        <img src="' + sig.logoUrl + '" width="170" border="0" alt="' + sig.company + '" style="display:block;outline:none;text-decoration:none;">\n'
 + '      </a>\n'
 + '    </td>\n'
-+ '    <td style="padding-left:15px;border-left:solid 0.5px ' + sc + ';line-height:19px;font-size:13px;' + f + 'color:' + tc + ';">\n'
-+ '      <b style="font-size:14.5px;font-weight:bold;' + f + 'color:' + tc + ';">' + nameHtml + '</b><br>\n'
-+ '      ' + (sig.role || 'Job Title') + phoneBlock + '\n'
++ '    <td class="ss-b" style="padding-left:15px;border-left:solid 0.5px ' + sc + ';line-height:19px;font-size:13px;' + f + 'color:' + tc + ';">\n'
++ '      <b class="ss-t" style="font-size:14.5px;font-weight:bold;' + f + 'color:' + tc + ';">' + nameHtml + '</b><br>\n'
++ '      <span class="ss-t" style="color:' + tc + ';">' + (sig.role || 'Job Title') + '</span>' + phoneBlock + '\n'
 + '    </td>\n'
 + '  </tr>\n'
 + '</table>\n'
@@ -652,7 +714,7 @@ createApp({
 
     return {
       isMobile, mobilePanel, desktopTab, activeTab, guideOs,
-      previewAreaEl, canvasStyle,
+      previewDark, previewAreaEl, canvasStyle,
       sig, copied, sigHtml, copySig,
     };
   }
