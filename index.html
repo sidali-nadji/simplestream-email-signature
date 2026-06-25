@@ -290,12 +290,8 @@
         <div class="section-label">Company</div>
         <div class="field-group">
           <div class="field">
-            <label>Company name</label>
-            <input type="text" v-model="sig.company" placeholder="Simplestream" />
-          </div>
-          <div class="field">
             <label>Website URL</label>
-            <input type="url" v-model="sig.companyUrl" placeholder="https://www.simplestream.com/" />
+            <input type="url" v-model="'Simplestream'Url" placeholder="https://www.simplestream.com/" />
           </div>
         </div>
       </div>
@@ -545,7 +541,6 @@ createApp({
 
     const copied = ref(false);
     const sig = reactive({
-      company:    'Simplestream',
       companyUrl: 'https://www.simplestream.com/',
       name:       'John Doe',
       role:       'Senior Marketing Analyst',
@@ -564,8 +559,8 @@ createApp({
 '<table cellspacing="0" cellpadding="0" border="0" style="line-height:0px;font-size:0px;' + F + 'color:' + tc + ';white-space:nowrap;display:block;mso-table-lspace:0pt;mso-table-rspace:0pt;">\n'
 + '  <tr>\n'
 + '    <td valign="middle" style="padding-right:15px;">\n'
-+ '      <a href="' + sig.companyUrl + '" target="_blank" style="text-decoration:none;">\n'
-+ '        <img src="' + logoUrl + '" width="170" border="0" alt="' + sig.company + '" style="display:block;outline:none;text-decoration:none;">\n'
++ '      <a href="' + 'Simplestream'Url + '" target="_blank" style="text-decoration:none;">\n'
++ '        <img src="' + logoUrl + '" width="170" border="0" alt="' + 'Simplestream' + '" style="display:block;outline:none;text-decoration:none;">\n'
 + '      </a>\n'
 + '    </td>\n'
 + '    <td class="sig-border" style="padding-left:15px;border-left:solid 0.5px ' + bc + ';line-height:19px;font-size:13px;' + F + 'color:' + tc + ';">\n'
@@ -581,7 +576,7 @@ createApp({
     const previewHtml = computed(() => {
       const dark = previewDark.value;
       return '<br>\n'
-        + buildTable(dark ? LOGO_DARK : LOGO_LIGHT, dark ? TC_DARK : TC_LIGHT, dark ? BC_DARK : BC_LIGHT)
+        + buildTable(LOGO_LIGHT, dark ? TC_DARK : TC_LIGHT, dark ? BC_DARK : BC_LIGHT)
         + '\n<br>';
     });
 
@@ -606,9 +601,9 @@ createApp({
 + '<table cellspacing="0" cellpadding="0" border="0" style="line-height:0px;font-size:0px;' + F + 'color:' + TC_LIGHT + ';white-space:nowrap;display:block;mso-table-lspace:0pt;mso-table-rspace:0pt;">\n'
 + '  <tr>\n'
 + '    <td valign="middle" style="padding-right:15px;">\n'
-+ '      <a href="' + sig.companyUrl + '" target="_blank" style="text-decoration:none;">\n'
-+ '        <img class="sig-logo-l" src="' + LOGO_LIGHT + '" width="170" border="0" alt="' + sig.company + '" style="display:block;outline:none;text-decoration:none;">\n'
-+ '        <img class="sig-logo-d" src="' + LOGO_DARK  + '" width="170" border="0" alt="' + sig.company + '" style="display:none;outline:none;text-decoration:none;">\n'
++ '      <a href="' + 'Simplestream'Url + '" target="_blank" style="text-decoration:none;">\n'
++ '        <img class="sig-logo-l" src="' + LOGO_LIGHT + '" width="170" border="0" alt="' + 'Simplestream' + '" style="display:block;outline:none;text-decoration:none;">\n'
++ '        <img class="sig-logo-d" src="' + LOGO_DARK  + '" width="170" border="0" alt="' + 'Simplestream' + '" style="display:none;outline:none;text-decoration:none;">\n'
 + '      </a>\n'
 + '    </td>\n'
 + '    <td class="sig-border" style="padding-left:15px;border-left:solid 0.5px ' + BC_LIGHT + ';line-height:19px;font-size:13px;' + F + 'color:' + TC_LIGHT + ';">\n'
