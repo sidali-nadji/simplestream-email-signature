@@ -332,12 +332,6 @@
             <input type="tel" v-model="sig.phone" placeholder="+44 7890 123456" />
           </div>
         </div>
-        <div class="field-group" style="margin-top:9px;">
-          <div class="toggle-row">
-            <label>Show phone number</label>
-            <label class="toggle"><input type="checkbox" v-model="sig.showPhone" /><span class="toggle-slider"></span></label>
-          </div>
-        </div>
       </div>
 
     </div><!-- /form-panel -->
@@ -563,7 +557,6 @@ createApp({
       lastName:   'Doe',
       role:       'Senior Marketing Analyst',
       phone:      '+44 7890 123456',
-      showPhone:  true,
     });
 
     const F = "font-family:'Trebuchet MS',Arial,sans-serif;";
@@ -571,7 +564,7 @@ createApp({
 
     function buildTable(logoUrl, tc, bc) {
       const name = (sig.firstName || 'FIRSTNAME').toUpperCase() + '&nbsp;' + (sig.lastName || 'LASTNAME').toUpperCase();
-      const phone = (sig.showPhone && sig.phone)
+      const phone = (sig.phone.trim())
         ? '<br>\n' + SPACER + '\n<span class="sig-text" style="color:' + tc + ';">' + sig.phone + '</span>'
         : '';
       return (
@@ -602,7 +595,7 @@ createApp({
     // Output: dual logos (light hidden in dark mode via CSS) + meta + @media block
     const sigHtml = computed(() => {
       const name = (sig.firstName || 'FIRSTNAME').toUpperCase() + '&nbsp;' + (sig.lastName || 'LASTNAME').toUpperCase();
-      const phone = (sig.showPhone && sig.phone)
+      const phone = (sig.phone.trim())
         ? '<br>\n' + SPACER + '\n<span class="sig-text" style="color:' + TC_LIGHT + ';">' + sig.phone + '</span>'
         : '';
       return (
